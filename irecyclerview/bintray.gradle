@@ -1,0 +1,100 @@
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
+
+group = 'com.wisdom.widget'                                  //***com.zzq.net
+project.archivesBaseName ='IRecyclerView'                            //***com.zzq.net:TextLib
+version = '1.0'                                                       //***com.zzq.net:TextLib:1.0.1
+
+def siteUrl = 'https://github.com/ZZhiQiang/MavenJcenter'
+def gitUrl = 'https://github.com/ZZhiQiang/MavenJcenter.git'
+def issuesUrl='https://github.com/ZZhiQiang/MavenJcenter/issues'
+install {
+    repositories.mavenInstaller {
+        pom {
+            project {
+                packaging 'aar'
+                name 'this is module'     // 项目描述
+                url siteUrl
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'zhuzhiqiang'                   // 开发者信息
+                        name 'zhuzhiqnag'                  // 开发者信息
+                        email '1316995875@qq.com'          // 开发者信息
+                    }
+                }
+                scm {
+                    connection gitUrl
+                    developerConnection gitUrl
+                    url siteUrl
+                }
+            }
+        }
+    }
+}
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+javadoc {
+    options {
+        encoding "UTF-8"
+        charSet 'UTF-8'
+        author true
+        version true
+        links "http://docs.oracle.com/javase/7/docs/api"
+        title 'super-server For Android'   // 文档标题
+    }
+}
+
+artifacts {
+//    archives javadocJar
+    archives sourcesJar
+}
+
+// 生成jar包
+task releaseJar(type: Copy) {
+    from( 'build/intermediates/bundles/release')
+    into( '../jar')
+    include('classes.jar')
+    rename('classes.jar', 'classes-' + version + '.jar')
+}
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+
+    configurations = ['archives']
+    pkg {
+        repo = "maven"                  //库名 ***bintray下的建的库名为maven  最好固定写死maven
+        name = "IRecyclerView"         //子库 ***（package）bintray下的建的包名 和module名保持一致
+        desc = "this is IRecyclerView"   //描述
+        websiteUrl = siteUrl
+        issueTrackerUrl =issuesUrl
+        vcsUrl = gitUrl
+        licenses = ["Apache-2.0"]
+        publish = true
+        publicDownloadNumbers = true
+    }
+}
+
+
